@@ -1,3 +1,5 @@
 node_modules/
 salida/
 decoded/
+# repo del juego anidado (solo referencia local, no se sube a GitHub)
+pokemonAutoChess/
