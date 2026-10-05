@@ -335,26 +335,7 @@ function resolveCombat(
   }
 }
 
-async function main() {
-  const args = process.argv.slice(2)
-  const file = args[0]
-  let outDir = "./salida"
-  let granularity: "frame" | "phase" = "frame"
-  for (let i = 1; i < args.length; i++) {
-    if (args[i] === "--out") outDir = args[++i]
-    else if (args[i] === "--granularity") {
-      const g = args[++i]
-      if (g !== "frame" && g !== "phase") {
-        console.error(`--granularity debe ser "frame" o "phase" (recibido: ${g})`)
-        process.exit(1)
-      }
-      granularity = g
-    }
-  }
-  if (!file) {
-    console.error("Uso: decode.ts <replay.colreplay> [--out DIR] [--granularity frame|phase]")
-    process.exit(1)
-  }
+export async function decodeFile(file: string, outDir: string, granularity: "frame" | "phase" = "frame") {
   const buf = readFileSync(file)
   const parsed: ParsedReplay = parseReplay(buf)
   const { header } = parsed
@@ -588,7 +569,34 @@ async function main() {
   console.log(`Salida en ${outDir}`)
 }
 
-main().catch((e) => {
-  console.error(e)
-  process.exit(1)
-})
+async function main() {
+  const args = process.argv.slice(2)
+  const file = args[0]
+  let outDir = "./salida"
+  let granularity: "frame" | "phase" = "frame"
+  for (let i = 1; i < args.length; i++) {
+    if (args[i] === "--out") outDir = args[++i]
+    else if (args[i] === "--granularity") {
+      const g = args[++i]
+      if (g !== "frame" && g !== "phase") {
+        console.error(`--granularity debe ser "frame" o "phase" (recibido: ${g})`)
+        process.exit(1)
+      }
+      granularity = g
+    }
+  }
+  if (!file) {
+    console.error("Uso: decode.ts <replay.colreplay> [--out DIR] [--granularity frame|phase]")
+    process.exit(1)
+  }
+  await decodeFile(file, outDir, granularity)
+}
+
+// solo corre el CLI al ejecutar este archivo directamente, no al importarlo
+const invokedAs = process.argv[1] ?? ""
+if (invokedAs.endsWith("src/decode.ts") || invokedAs.endsWith("/decode.ts") || invokedAs === "decode.ts") {
+  main().catch((e) => {
+    console.error(e)
+    process.exit(1)
+  })
+}

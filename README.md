@@ -14,6 +14,18 @@ npm run decode -- /ruta/al/replay.colreplay --out ./salida
 npm run decode -- /ruta/al/replay.colreplay --out ./salida --granularity phase
 ```
 
+## Modo lote (un solo comando)
+
+Pon todos los `.colreplay` en `./input/` y corre:
+
+```bash
+npm run decode:all
+# equivale a: npx tsx src/decode-all.ts --in ./input --out ./decoded
+```
+
+Procesa cada archivo a `./decoded/<nombre-del-replay>/` y al final informa
+cuántos se procesaron y cuáles fallaron (un archivo malo no detiene el resto).
+
 ## Salida
 
 - `rounds.jsonl` / `rounds.csv` — una fila por jugador en cada cambio de

@@ -4,7 +4,8 @@
   "description": "Decodificador independiente de replays .colreplay (CLRP) de Pokémon Auto Chess",
   "type": "module",
   "scripts": {
-    "decode": "tsx src/decode.ts"
+    "decode": "tsx src/decode.ts",
+    "decode:all": "tsx src/decode-all.ts"
   },
   "dependencies": {
     "@colyseus/msgpackr": "^1.11.3",
