@@ -205,5 +205,60 @@ export function buildStory(input: StoryInput): string {
     }
     L.push("")
   }
+
+  // daño por objeto: cruza el daño de cada atacante con los objetos que llevaba
+  // equipados en el tablero de su dueño en ese stage (aproximado: si la unidad
+  // ya no está en el tablero de la foto, su daño queda como no atribuido)
+  const boardItems = new Map<string, Map<string, string[]>>() // stage|name -> unit -> items
+  for (const r of rounds) {
+    const key = `${r.stageLevel}|${r.name}`
+    if (!boardItems.has(key)) boardItems.set(key, new Map())
+    const m = boardItems.get(key)!
+    for (const entry of String(r.board || "").split(";").map((s) => s.trim()).filter(Boolean)) {
+      const mm = entry.match(/^(.*) ★\d+(?:\(([^)]*)\))? @-?\d+,-?\d+$/)
+      if (mm) m.set(mm[1], mm[2] ? mm[2].split("+") : [])
+    }
+  }
+  const simStage = new Map<string, number>()
+  const simOwner = new Map<string, { name: string; side: string }>()
+  for (const [simId, rows] of fightsBySim) {
+    simStage.set(simId, Number(rows[0]?.stage))
+    simOwner.set(simId + "|blue", { name: String(rows[0]?.blue ?? ""), side: "blue" })
+    simOwner.set(simId + "|red", { name: String(rows[0]?.red ?? ""), side: "red" })
+  }
+  const dmgByItem = new Map<string, number>()
+  let notFound = 0
+  for (const c of combatSummary) {
+    const stage = simStage.get(c.simId)
+    const owner = simOwner.get(c.simId + "|" + c.attackerSide)?.name ?? ""
+    const units = boardItems.get(`${stage}|${owner}`)
+    if (units === undefined) {
+      // bando sin tablero de jugador (rival PvE): baseline, no es un fallo
+      dmgByItem.set("(rival PvE)", (dmgByItem.get("(rival PvE)") ?? 0) + c.damage)
+      continue
+    }
+    if (!units.has(c.attacker)) {
+      notFound += c.damage
+      continue
+    }
+    const items = units.get(c.attacker)!
+    if (!items.length) {
+      dmgByItem.set("(sin objeto)", (dmgByItem.get("(sin objeto)") ?? 0) + c.damage)
+      continue
+    }
+    const share = c.damage / items.length
+    for (const it of items) dmgByItem.set(it, (dmgByItem.get(it) ?? 0) + share)
+  }
+  L.push("## Daño por objeto (toda la partida)")
+  L.push("")
+  L.push("Aproximado: reparte el daño de cada unidad entre los objetos que llevaba")
+  L.push("en la foto de su stage. No encontrado (unidad vendida/evolucionada): " + notFound + ".")
+  L.push("")
+  L.push("| objeto | daño atribuido |")
+  L.push("|---|---|")
+  for (const [it, dmg] of [...dmgByItem.entries()].sort((a, b) => b[1] - a[1]).slice(0, 20)) {
+    L.push(`| ${it} | ${Math.round(dmg)} |`)
+  }
+  L.push("")
   return L.join("\n")
 }
