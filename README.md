@@ -46,8 +46,9 @@ cuántos se procesaron y cuáles fallaron (un archivo malo no detiene el resto).
   pelea, con `sharePct` (cuota del daño total de esa simulación).
 - `story.md` — narrativa ronda a ronda del POV: situación, acciones con causa
   y timestamp exacto, resumen de tu pelea con daño a favor/en contra, tabla
-  comparativa de los 8 jugadores, consejo de objetos (qué podías haber
-  combinado según las recetas del juego) y tabla de daño por objeto.
+  comparativa de los 8 jugadores, consejo de objetos y tabla de daño por objeto.
+- `report.html` — reporte visual autocontenido (se abre en el navegador):
+  curvas de vida/oro/nivel por ronda, posiciones finales y top de daño.
 - `summary.json` — metadatos, conteos, frames y mensajes no decodificables.
 
 ## Cómo funciona

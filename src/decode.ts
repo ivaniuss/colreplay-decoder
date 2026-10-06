@@ -3,6 +3,7 @@ import { join } from "node:path"
 import { SchemaSerializer } from "@colyseus/sdk"
 import { parseReplay, type ParsedReplay } from "./format.js"
 import { buildStory } from "./story.js"
+import { buildReportHtml } from "./report-html.js"
 
 const PHASE_NAMES = ["PICK", "FIGHT", "TOWN"]
 
@@ -558,6 +559,13 @@ export async function decodeFile(file: string, outDir: string, granularity: "fra
   writeFileSync(join(outDir, "summary.json"), JSON.stringify(summary, null, 2))
   const story = buildStory({ viewerUid: header.viewerUid, rounds, events, combat, combatSummary })
   writeFileSync(join(outDir, "story.md"), story)
+  const reportHtml = buildReportHtml({
+    viewerUid: header.viewerUid,
+    gameVersion: header.game.version,
+    recordedAt: header.recordedAt,
+    rounds, combatSummary
+  })
+  writeFileSync(join(outDir, "report.html"), reportHtml)
 
   console.log(`\nFrames: ${parsed.frames.length} totales, ${framesApplied} aplicados, ${badFrames.length} con error`)
   console.log(`Mensajes: ${messagesProcessed} procesados; tipos:`, Object.fromEntries(msgTypeCounts))
